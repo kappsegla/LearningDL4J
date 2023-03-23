@@ -2,7 +2,7 @@ package demo;
 
 import org.datavec.image.loader.NativeImageLoader;
 import org.datavec.image.transform.ColorConversionTransform;
-import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
+import org.deeplearning4j.datasets.iterator.utilty.ListDataSetIterator;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
@@ -28,6 +28,8 @@ import java.util.Random;
 
 import static org.opencv.imgproc.Imgproc.COLOR_RGBA2GRAY;
 
+//https://deeplearning4j.konduit.ai/
+
 public class MinstClassifier {
 
     private static final String RESOURCES_FOLDER_PATH = "./src/main/resources/mnist_png";
@@ -43,17 +45,15 @@ public class MinstClassifier {
 
     public static void main(String[] args) throws IOException {
 
-        t0 = System.currentTimeMillis();
-        //System.out.print(RESOURCES_FOLDER_PATH + "/training");
-        DataSetIterator dataSetIterator = getDataSetIterator(RESOURCES_FOLDER_PATH + "/training", N_SAMPLES_TRAINING);
-
-        buildModel(dataSetIterator);
+        buildModel();
     }
 
-    private static void buildModel(DataSetIterator dsi) throws IOException {
+    private static void buildModel() throws IOException {
 
         int rngSeed = 123;
         int nEpochs = 1;
+
+        int layer_size = 768;
 
         System.out.println("Build Model...");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -61,10 +61,10 @@ public class MinstClassifier {
                 .updater(new Nesterovs(0.006, 0.9))
                 .l2(1e-4).list()
                 .layer(new DenseLayer.Builder()
-                        .nIn(HEIGHT * WIDTH).nOut(1000).activation(Activation.RELU)
+                        .nIn(HEIGHT * WIDTH).nOut(layer_size).activation(Activation.RELU)
                         .weightInit(WeightInit.XAVIER).build())
                 .layer(new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .nIn(1000).nOut(N_OUTCOMES).activation(Activation.SOFTMAX)
+                        .nIn(layer_size).nOut(N_OUTCOMES).activation(Activation.SOFTMAX)
                         .weightInit(WeightInit.XAVIER).build())
                 .build();
 
@@ -74,7 +74,10 @@ public class MinstClassifier {
         model.setListeners(new ScoreIterationListener(500));
 
         System.out.println("Train Model...");
-        model.fit(dsi, nEpochs);
+
+        DataSetIterator dataSetIterator = getDataSetIterator(RESOURCES_FOLDER_PATH + "/training", N_SAMPLES_TRAINING);
+
+        model.fit(dataSetIterator, nEpochs);
 
         //Evaluation
         DataSetIterator testDsi = getDataSetIterator(RESOURCES_FOLDER_PATH + "/testing", N_SAMPLES_TESTING);
