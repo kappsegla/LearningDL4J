@@ -1,5 +1,5 @@
 Test implementation of using DL4J to train and test against Mnist dataset.
-Download dataset from: https://www.dropbox.com/s/p9eohuwvnwd40h0/mnist_png.tar.gz?dl=0
+Download dataset from: https://github.com/myleott/mnist_png
 
 Unpack into folder and update RESOURCES_FOLDER_PATH to point to that folder.
 Three folders are available, training, testing and myimages.
